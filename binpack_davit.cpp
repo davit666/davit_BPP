@@ -11,7 +11,7 @@ int main()
 	//托盘尺寸
 	xx = 113;
 	yy = 95;
-	zz = 104;
+	zz = 100;
 
 	//吸盘尺寸
 	int s_x = 14;
@@ -336,8 +336,8 @@ int main()
 	CPlanning_Box PlanningBox(xx, yy, zz, s_x, s_y, release_z,allow_err_z, low_gap, allow_over_z,true);
 
 
-	for (int i = 0;i < 46;i++)
-		PlanningBox.BoxType.push_back(Box_size[i]);
+	// for (int i = 0;i < 46;i++)
+	// 	PlanningBox.BoxType.push_back(Box_size[i]);
 
 	int box_num = 0;
 	int packed_num = 0;
@@ -360,15 +360,23 @@ int main()
 	// 		break;
 	// 	}
 	// }
+	int loop  = 0;
+   
+	clock_t start, finish;    
+	double  duration;
+	start = clock();   
 
-	while(1)
+
+	while(loop <10)
 	{
 		if ((PlanningBox.pallet_is_full == true)||(change_pallet_flag == true))
 		{
 			PlanningBox.Clear_CPlanning_Box();
+			// PlanningBox.clear();
 			change_pallet_flag = false;
 		}
-		int box_rand = (rand()%49967) % 46;
+		int box_rand = (rand()%4659) % 46;
+		// int box_rand = rand() % 46;
     	place_box = Box_size[box_rand];
 		
 		result_planning = PlanningBox.Place_Box_to_Gap(place_box);
@@ -380,13 +388,12 @@ int main()
 		}
 		else
 		{
+			loop ++;
 			change_pallet_flag = true;
 			packed_num = 0;
 			bool write_flag = true;
-			cout<<"!!!!!!!!!!!!!!!!!!!!!!1"<<endl;
 			for (int i = 0;i < packed_box_all.size();i++)
 			{
-				cout<<"??????????????????????????"<<endl;
 				if (packed_box_all[i].size() == PlanningBox.packed_boxes.size())
 				{
 					int j;
@@ -432,12 +439,15 @@ int main()
 			}
 			PlanningBox.pallet_is_full = true;
 			
-			// break;
+			cout<<"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"<<endl;
 		}
 
 	}
-    
-    cout<<"simulation ended"<<endl;
 
+    cout<<"simulation ended"<<endl;
+	printf( "Time to do %d BBP loops is ", loop);       
+	finish = clock();    
+	duration = (double)(finish - start) / CLOCKS_PER_SEC;    
+	printf( "%f seconds\n", duration );    
 
 }

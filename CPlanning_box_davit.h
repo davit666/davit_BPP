@@ -73,7 +73,7 @@ struct gap_info
 	int z;
 	int index;
 	int box_orientation;
-    int box_position;
+    int box_position = LEFT_DOWN;
 };
 class CPlanning_Box
 {

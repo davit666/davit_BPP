@@ -79,10 +79,12 @@ void CPlanning_Box::Clear_CPlanning_Box()
 
     packed_boxes.clear();
     gaps_set.clear();
+    gaps_set.resize(pallet_z + 1);
     gaps_height.clear();
     temp_gaps_height.clear();
     Initialize_Pallet(Height_Map,pallet_x,pallet_y,pallet_z,have_wall);
     Find_Gaps_on_z(0);
+
 
 }
 
@@ -90,6 +92,7 @@ void CPlanning_Box::Clear_CPlanning_Box()
 
 void CPlanning_Box::Find_Gaps_on_z(int z)
 {
+    
     if (gaps_set[z].size())
     {
         gaps_set[z].clear();
@@ -125,6 +128,7 @@ void CPlanning_Box::Find_Gaps_on_z(int z)
 
 int CPlanning_Box::Find_Rectangle_area(vector<vector<int>> available_matirx,int z)
 {
+    
     if (available_matirx.empty()) return 0;
     const int m = available_matirx.size();
     const int n = available_matirx[0].size();
@@ -134,10 +138,9 @@ int CPlanning_Box::Find_Rectangle_area(vector<vector<int>> available_matirx,int 
     vector<int> height2(n,0);
 
     int maxA = 0;
-
 	for (int i = 0; i < m; i++)
 	{
-		int cur_left = 0, cur_right = n; //当前left，当前n
+        int cur_left = 0, cur_right = n; //当前left，当前n
 
 		// 计算高度compute height (can do this from either side)
 		for (int j = 0; j < n; j++)
@@ -213,12 +216,11 @@ int CPlanning_Box::Find_Rectangle_area(vector<vector<int>> available_matirx,int 
 		}
 	}
     cout <<"now here is \t"<<z<<"\tfloor, size is\t"<< gaps_set[z].size()<<"\tmax area is:\t"<<maxA<<endl;
-    // cout << gaps_set[z][0].left<<" "<< gaps_set[z][0].right<<endl;
 	return gaps_set[z].size();
 }
 bool CPlanning_Box::Place_Box_to_Gap(boxinfo &box)
 {
-    cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<endl;
+    cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<endl;
     cout <<"start"<<endl;
     cout <<"box size is:\t"<<box.dim1 <<"\t"<<box.dim2<<"\t"<<box.dim3<<endl;
     
@@ -233,11 +235,13 @@ bool CPlanning_Box::Place_Box_to_Gap(boxinfo &box)
     }
     cout<< "solution number:\t "<<gap_solutions.size()<<endl;
     gap_info best_gap = Find_Best_Gap(box,gap_solutions);
+    gap_solutions.clear();
     cout <<"best gap info is :\t"<<best_gap.z<<"  "<<best_gap.index<<endl;
     cout<< "orientation and position:\t "<<best_gap.box_orientation<<" "<<best_gap.box_position<<endl;
     cout <<"best gap range is :\t"<<gaps_set[best_gap.z][best_gap.index].left<<"  "<<gaps_set[best_gap.z][best_gap.index].right<<"  "<<gaps_set[best_gap.z][best_gap.index].top<<"  "<<gaps_set[best_gap.z][best_gap.index].down<<endl;
     
     Place_Box_and_Update(box,best_gap);
+    cout<<"############################################################"<<endl;
     return true;
 
 }
@@ -246,11 +250,11 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
 {
 
     vector<gap_info> gap_solutions;
+    cout<<gap_solutions.size()<<endl;;
     temp_gaps_height.clear();
     while (gap_solutions.size()< available_gaps_num_limit)
     {
 
-        
         int z = *gaps_height.begin();
         temp_gaps_height.insert(temp_gaps_height.end(),z);
         gaps_height.erase(z);
@@ -272,18 +276,19 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
                 }
                 if (((gaps_set[z][i].right-gaps_set[z][i].left + 1)>= box.dim2)&&((gaps_set[z][i].top-gaps_set[z][i].down)>= box.dim1 + 1))
                 {
-                    gap_info temp_gap;
-                    temp_gap.z = z;
-                    temp_gap.index = i;
-                    temp_gap.box_orientation = 1;
+                    gap_info temp_gap_r;
+                    temp_gap_r.z = z;
+                    temp_gap_r.index = i;
+                    temp_gap_r.box_orientation = 1;
+
                     if (z+ box.dim3 <= pallet_z +z_allowed_over_pallet)
                     {
-                        gap_solutions.push_back(temp_gap);
+                        cout<<gap_solutions.size()<<endl;
+                        gap_solutions.push_back(temp_gap_r);
                     }
                 }
             }
         }
-        // cout<<"gap height size\t"<<gaps_height.size()<<endl;
         if (gaps_height.size()<1) break;
     }
     for (int i = 0; i< temp_gaps_height.size();i++)
@@ -457,7 +462,6 @@ void CPlanning_Box::Calcul_Box_Coordinate(boxinfo &box,gap_info best_gap)
     
     gap_range gap = gaps_set[best_gap.z][best_gap.index];
     int box_position = best_gap.box_position;
-    // cout<<"?????????????"<<box_position<<endl;
     switch (box_position)
     {
         case LEFT_DOWN:
