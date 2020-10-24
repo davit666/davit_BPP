@@ -138,8 +138,8 @@ class CPlanning_Box
     vector<vector<gap_range>> gaps_set;
     set<int> gaps_height;
     vector<int> temp_gaps_height;
-    int available_gaps_num_limit;
-    vector<boxinfo> placed_boxes;
+    
+    vector<boxinfo> packed_boxes;
 
 
 

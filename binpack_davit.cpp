@@ -44,7 +44,7 @@ int main()
 
 	boxinfo box_type[47];
 
-	long long int all_volume = 0;
+	float all_volume_ratio = 0;
 	//////////第一组
 	//
 		
@@ -339,23 +339,102 @@ int main()
 	for (int i = 0;i < 46;i++)
 		PlanningBox.BoxType.push_back(Box_size[i]);
 
-	int box_num = 1;
+	int box_num = 0;
 	int packed_num = 0;
 	long long file_num = 1;
-	bool result_planning = true;
-    boxinfo place_box;
-	bool is_change_flag = false;
+	bool result_planning;
 
-	for (int i = 0;i<100;i++)
+	ofstream outfile;
+	
+    boxinfo place_box;
+	bool change_pallet_flag = false;
+
+	// for (int i = 0;i<100;i++)
+	// {
+	// 	// srand((unsigned)time(NULL));
+	// 	int box_rand = (rand()%46) % 46;
+    // 	place_box = Box_size[box_rand];
+    // 	result_planning = PlanningBox.Place_Box_to_Gap(place_box);
+	// 	if (result_planning ==0)
+	// 	{
+	// 		break;
+	// 	}
+	// }
+
+	while(1)
 	{
-		srand((unsigned)time(NULL));
-		int box_rand = rand() % 46;
-    	place_box = Box_size[box_rand];
-    	result_planning = PlanningBox.Place_Box_to_Gap(place_box);
-		if (result_planning ==0)
+		if ((PlanningBox.pallet_is_full == true)||(change_pallet_flag == true))
 		{
-			break;
+			PlanningBox.Clear_CPlanning_Box();
+			change_pallet_flag = false;
 		}
+		int box_rand = (rand()%49967) % 46;
+    	place_box = Box_size[box_rand];
+		
+		result_planning = PlanningBox.Place_Box_to_Gap(place_box);
+		if (result_planning)
+		{
+			box_num++;
+			packed_num++;
+			cout <<"box number:\t"<<box_num<<"\tplaced, current packed box number is:\t"<<packed_num<<endl;
+		}
+		else
+		{
+			change_pallet_flag = true;
+			packed_num = 0;
+			bool write_flag = true;
+			cout<<"!!!!!!!!!!!!!!!!!!!!!!1"<<endl;
+			for (int i = 0;i < packed_box_all.size();i++)
+			{
+				cout<<"??????????????????????????"<<endl;
+				if (packed_box_all[i].size() == PlanningBox.packed_boxes.size())
+				{
+					int j;
+					for (j = 0;j < packed_box_all[i].size();j++)
+					{
+						if (packed_box_all[i][j].cox == PlanningBox.packed_boxes[j].cox
+							&&packed_box_all[i][j].coy == PlanningBox.packed_boxes[j].coy
+							&&packed_box_all[i][j].coz == PlanningBox.packed_boxes[j].coz
+							&&packed_box_all[i][j].packx == PlanningBox.packed_boxes[j].packx
+							&&packed_box_all[i][j].packy == PlanningBox.packed_boxes[j].packy
+							&&packed_box_all[i][j].packz == PlanningBox.packed_boxes[j].packz)
+							continue;
+						else break;
+					}
+
+					if (j == packed_box_all[i].size())write_flag = false;
+				}
+			}
+			if (write_flag)
+			{
+				outfile.open("result.txt", ios::app);
+
+				if (!outfile)
+				{
+					cout << "output file not open!!\n" << endl;
+				}
+
+				packed_box_all.push_back(PlanningBox.packed_boxes);
+				all_volume_ratio += PlanningBox.volume_ratio;
+				float pingjun_ratio = float(all_volume_ratio) / float(packed_box_all.size());
+				cout << "当前托盘空间利用率 Volume Ratio: " << PlanningBox.volume_ratio << endl;
+				cout << "目前为止平均空间利用率:" << pingjun_ratio << endl;
+
+				for (int i = 0;i < PlanningBox.packed_boxes.size();i++)
+				{
+					outfile << box_num - PlanningBox.packed_boxes.size() + i<< " " << PlanningBox.packed_boxes[i].cox << " " << PlanningBox.packed_boxes[i].coy << " " << PlanningBox.packed_boxes[i].coz << " " << PlanningBox.packed_boxes[i].packx << " " << PlanningBox.packed_boxes[i].packy << " " << PlanningBox.packed_boxes[i].packz << endl;
+				}
+				outfile << "Volume Ratio" << PlanningBox.volume_ratio << endl;
+				outfile << "pingjun_ratio" << pingjun_ratio << endl;
+
+				outfile << endl;
+				outfile.close();
+			}
+			PlanningBox.pallet_is_full = true;
+			
+			// break;
+		}
+
 	}
     
     cout<<"simulation ended"<<endl;
