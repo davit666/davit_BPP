@@ -26,16 +26,23 @@ const int LEFT_TOP = 6;
 const int RIGHT_DOWN = 7;
 const int RIGHT_TOP = 8;
 const int Min_Box_Size = 22;
-const int available_gaps_num_limit = 10;
+const int Max_Allowed_Gap_Size = 5; 
+const int available_gaps_num_limit = 20; 
+
+const float stability_threshold_area = 0.1;
+const float stability_threshold_center = 0.4;
+const int allow_z_err = 3;
+const int z_allowed_over_pallet = 0;
 
 
 
-const int weight_height = 1;
-const int weight_range = 1;
-const int weight_support = 1;
-const int weight_area_supported = 1;
-const int weight_area_contacted = 1;
-const int weight_area_created = 1;
+const float weight_height = 1;
+const float weight_range = 1;
+const float weight_support = 1;
+const float weight_area_supported_area = 0.1;
+const float weight_area_supported_center = 0.1;
+const float weight_area_contacted = 0.1;
+const float weight_area_created = 0.1;
 
 
 
@@ -78,7 +85,7 @@ struct gap_info
 class CPlanning_Box
 {
     public:
-    CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z, int allow_z, int low_gap,int z_allowed_over_pallet,bool have_wall);
+    CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,int low_gap,bool have_wall);
 	// ~CPlanning_Box();
     bool Place_Box_to_Gap(boxinfo &box);
     void Update_Height_map();
@@ -96,16 +103,16 @@ class CPlanning_Box
     
     
     gap_info Find_Best_Gap(boxinfo box, vector<gap_info> gap_solutions);
-    int Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &gap_solution);
-    int Evaluate_Height(boxinfo box, gap_range gap);
-    int Evaluate_Range(boxinfo box, gap_range gap);
-    int Evaluate_Support(boxinfo box, gap_range gap);
+    float Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &gap_solution);
+    float Evaluate_Height(boxinfo box, gap_range gap);
+    float Evaluate_Range(boxinfo box, gap_range gap);
+    float Evaluate_Support(boxinfo box, gap_range gap);
 
     // int Find_Best_Pos_in_Gap(boxinfo box, gap_range gap,gap_info &gap_solution);
-    int Evaluate_Area_Supported(boxinfo box,gap_range gap);
-    int Evaluate_Area_Contacted(boxinfo box,gap_range gap);
-    int Evaluate_Area_Created(boxinfo box,gap_range gap);
-    int Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution);
+    float Evaluate_Area_Supported(boxinfo box,gap_range gap);
+    float Evaluate_Area_Contacted(boxinfo box,gap_range gap);
+    float Evaluate_Area_Created(boxinfo box,gap_range gap);
+    float Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution);
 
 
     void Place_Box_and_Update(boxinfo &box,gap_info &best_gap);
@@ -120,7 +127,6 @@ class CPlanning_Box
     int sucker_x,sucker_y;
     int release_z;
     int find_low_gap;
-    int z_allowed_over_pallet;
     int cur_box_bottom,cur_box_top;
     int box_count;
     int pallet_volume;

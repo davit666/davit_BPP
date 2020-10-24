@@ -22,14 +22,9 @@ int main()
 
 
 
-	//设置放置允许的Z方向误差
-	int allow_err_z = 3;
-
 	//设置寻找最低层的范围
 	int low_gap = 45;
 
-	// 层内码垛允许超过层高标准的限制值
-	int allow_over_z = 0;
 
 	// 每一层的层高
 	int layer_high_one = 20;
@@ -333,7 +328,7 @@ int main()
 
 
 	//初始化
-	CPlanning_Box PlanningBox(xx, yy, zz, s_x, s_y, release_z,allow_err_z, low_gap, allow_over_z,true);
+	CPlanning_Box PlanningBox(xx, yy, zz, s_x, s_y, release_z, low_gap,true);
 
 
 	// for (int i = 0;i < 46;i++)
@@ -349,17 +344,7 @@ int main()
     boxinfo place_box;
 	bool change_pallet_flag = false;
 
-	// for (int i = 0;i<100;i++)
-	// {
-	// 	// srand((unsigned)time(NULL));
-	// 	int box_rand = (rand()%46) % 46;
-    // 	place_box = Box_size[box_rand];
-    // 	result_planning = PlanningBox.Place_Box_to_Gap(place_box);
-	// 	if (result_planning ==0)
-	// 	{
-	// 		break;
-	// 	}
-	// }
+
 	int loop  = 0;
    
 	clock_t start, finish;    
@@ -367,7 +352,7 @@ int main()
 	start = clock();   
 
 
-	while(loop <10)
+	while(loop <1)
 	{
 		if ((PlanningBox.pallet_is_full == true)||(change_pallet_flag == true))
 		{

@@ -7,7 +7,7 @@ bool operator==(const POINT &pt1, const POINT &pt2) {
 	return (pt1.x == pt2.x && pt1.y == pt2.y);
 }
 
-CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z, int allow_z_err, int low_gap,int z_allowed_over_pallet,bool have_wall)
+CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,int low_gap,bool have_wall)
 {
     //pallet information
    	pallet_x = px;
@@ -21,8 +21,6 @@ CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z, 
 	release_z = r_z; 
 
 	find_low_gap = low_gap;
-	z_allowed_over_pallet = z_allowed_over_pallet;
-    allow_z_err = allow_z_err; 
     have_wall = have_wall;
     
     pallet_is_full = false;
@@ -308,7 +306,7 @@ gap_info CPlanning_Box::Find_Best_Gap(boxinfo box, vector<gap_info> gap_solution
 
     for(int i = 0;i < gap_solutions.size();i++)
     {
-        int tmp_score = Find_Best_Position_and_Evaluate_Gap(temp_box, gap_solutions[i]);
+        float tmp_score = Find_Best_Position_and_Evaluate_Gap(temp_box, gap_solutions[i]);
         if (tmp_score > best_score)
         {
             best_score = tmp_score;
@@ -318,7 +316,7 @@ gap_info CPlanning_Box::Find_Best_Gap(boxinfo box, vector<gap_info> gap_solution
     cout <<"best score is:\t"<<best_score<<endl;
     return best_gap;
 }
-int CPlanning_Box::Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &gap_solution)
+float CPlanning_Box::Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &gap_solution)
 {
     if (gap_solution.box_orientation == 1)
     {
@@ -326,53 +324,121 @@ int CPlanning_Box::Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &gap
         box.dim1 = box.dim2;
         box.dim2 = tmp;
     }
-    int gap_score = 0;
+    float gap_score = 0;
     gap_range gap = gaps_set[gap_solution.z][gap_solution.index];
     int box_direction = gap_solution.box_orientation;
     // cout << gap.left<<"\t"<< gap.right<<"\t"<< gap.down<<"\t"<< gap.top<<"\t"<<endl;
     // cout <<box_direction<<endl;
 
+    gap_score += Find_Best_Pos_in_Gap(box,gap,gap_solution);
+    if (gap_score < 0) return 0;    
+    
     gap_score += Evaluate_Height(box,gap) * weight_height;
     gap_score += Evaluate_Range(box,gap) * weight_range;
     gap_score += Evaluate_Support(box,gap) * weight_support;
 
-    gap_score += Find_Best_Pos_in_Gap(box,gap,gap_solution);
+    
     // cout <<"midside function best position:\t" <<gap_solution.box_position<<endl;
     // cout <<"midside function box dim"<<box.dim1<<" "<<box.dim2<<endl;
 
     return gap_score;
 }
 
-int CPlanning_Box::Evaluate_Height(boxinfo box, gap_range gap)
+float CPlanning_Box::Evaluate_Height(boxinfo box, gap_range gap)
 {
-    return (pallet_z - gap.z_dim);
+    float score_height = 1 - (float)gap.z_dim/ (float) pallet_z;
+    cout<<"height score: \t"<< score_height<<endl;
+    return  score_height;
 }
-int CPlanning_Box::Evaluate_Range(boxinfo box, gap_range gap)
+float CPlanning_Box::Evaluate_Range(boxinfo box, gap_range gap)
 {
-    return 0;
+    float score_x,score_y;
+    float delta_x = (float) ((gap.right - gap.left +1) - box.dim1);
+    float delta_y = (float) ((gap.top - gap.down +1) - box.dim2);
+    if (delta_x<0 || delta_y <0) return -10000;
+    
+    float px = (float) pallet_x;
+    float py = (float) pallet_y;
+    float mb = (float) Min_Box_Size;
+    float ma = (float) Max_Allowed_Gap_Size;
+    
+    float cross_point_x = px * ma / (px - mb + ma);
+    float cross_point_y = py * ma / (py - mb + ma);
+    if (delta_x <= cross_point_x) score_x = delta_x *(-1 / ma) + 1;
+    else score_x = delta_x / (px - mb) - mb / (px - mb);
+    if (delta_y <= cross_point_y) score_y =  delta_y *(-1 / ma) + 1;
+    else score_y = delta_y / (py - mb) - mb / (py - mb);
+
+    cout<<"range score:\t"<<(score_x * pallet_y + score_y * pallet_x)/ (pallet_y + pallet_x)<<endl;
+    
+    return (score_x * pallet_y + score_y * pallet_x)/ (pallet_y + pallet_x);
 }
-int CPlanning_Box::Evaluate_Support(boxinfo box, gap_range gap)
+float CPlanning_Box::Evaluate_Support(boxinfo box, gap_range gap) 
 {
     return 0;
 }
 
-int CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution)
+float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution)
 {
     
-    int score;
+    float score;
     gap_range temp_gap;
-    int best_score = 0;
+    float best_score = 0;
     int best_position = LEFT_DOWN;
     vector<int> positions = {LEFT_DOWN,LEFT_TOP,RIGHT_TOP,RIGHT_DOWN};
+    cout <<"box info:\t"<< box.dim1<<"\t"<<box.dim2<<"\t"<<box.dim3<<endl;;
+    cout <<"original gap:\t"<<gap.left<<"\t"<<gap.right<<"\t"<<gap.top<<"\t"<<gap.down<<"\t"<<endl;
     for (int i = 0;i < positions.size();i++)
     {
         score = 0;
+        
         temp_gap.z_dim = gap.z_dim;
         temp_gap.area = box.dim1 * box.dim2;
         
-
-        // score = gap_solution->box_orientation;
-        score += Evaluate_Area_Supported(box,temp_gap) * weight_area_supported;
+        switch (positions[i])
+        {
+            case LEFT_DOWN:
+            {
+                temp_gap.left = gap.left;
+                temp_gap.down = gap.down;
+                temp_gap.right = gap.left + box.dim1 - 1;
+                temp_gap.top = gap.down + box.dim2 -1;
+                break;
+            }
+            case LEFT_TOP:
+            {
+                temp_gap.left = gap.left;
+                temp_gap.down = gap.top -box.dim2 +1;
+                temp_gap.right = gap.left + box.dim1 - 1;
+                temp_gap.top = gap.top;
+                break;
+            }
+            case RIGHT_TOP:
+            {
+                temp_gap.left = gap.right - box.dim1 +1;
+                temp_gap.down = gap.top -box.dim2 +1;
+                temp_gap.right = gap.right;
+                temp_gap.top = gap.top;
+                break;
+            }
+            case RIGHT_DOWN:
+            {
+                temp_gap.left = gap.right - box.dim1 +1;
+                temp_gap.down = gap.down;
+                temp_gap.right = gap.right;
+                temp_gap.top = gap.down + box.dim2 -1;
+                break;
+            }
+            default:
+            {
+                cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!no box position . something goes wrong"<<endl;
+                break;
+            }
+        }
+        cout <<"new\t"<<positions[i]<<"\tgap:\t"<<temp_gap.left<<"\t"<<temp_gap.right<<"\t"<<temp_gap.top<<"\t"<<temp_gap.down<<"\t"<<endl;
+        
+        score += Evaluate_Area_Supported(box,temp_gap);
+        if (score <0) return -10000;
         score += Evaluate_Area_Contacted(box,temp_gap) * weight_area_contacted;
         score += Evaluate_Area_Created(box,temp_gap) * weight_area_created;
 
@@ -388,18 +454,137 @@ int CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_
     // cout <<"inside function best position:\t" <<gap_solution.box_position<<endl;
     // cout <<"inside function box dim"<<box.dim1<<" "<<box.dim2<<endl;
 
-    return 0;
+    return best_score;
 }
 
-int CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
+float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
 {
-    return 0;
+    float box_center_x = ((float)gap.left + (float)gap.right)/2;
+    float box_center_y = ((float)gap.top + (float)gap.down)/2;
+    
+    int support_area = 0;
+    float support_center_x;
+    float support_center_y;
+
+    int tmp_h;
+
+    for (int i = gap.left; i <= gap.right; i++)
+    {
+        for (int j = gap.down; j <= gap.top; j++)
+        {
+            tmp_h = Height_Map[i][j].Height;
+            if ((tmp_h <= gap.z_dim)&&( tmp_h >= gap.z_dim - allow_z_err))
+            {
+                support_center_x += i;
+                support_center_y += j; 
+                support_area ++;
+            }
+        }
+    }
+
+    support_center_x /= (float) support_area;
+    support_center_y /= (float) support_area;
+    cout <<"area\t"<<support_area<<"\tcenter\t"<<support_center_x <<"\t"<<support_center_y<<endl;
+
+    float support_area_ratio = (float) support_area / (float) gap.area;
+
+    // float center_diff = sqrt(pow((support_center_x-box_center_x),2) + pow((support_center_y-box_center_y),2));
+    // float box_half_diagnal_length = sqrt(pow((float)box.dim1,2) + pow((float)box.dim2,2))/2;
+    // cout <<"diff\t"<<center_diff<<"\thalf_diag\t"<<box_half_diagnal_length<<endl;
+    
+    // float support_center_ratio = 1 - center_diff / box_half_diagnal_length;
+    float support_center_ratio_x = abs(support_center_x-box_center_x) / ((float)box.dim1/2);
+    float support_center_ratio_y = abs(support_center_y-box_center_y) / ((float)box.dim2/2);
+    float support_center_ratio = 1 - max(support_center_ratio_x,support_center_ratio_y);
+
+    cout <<"area ratio \t"<<support_area_ratio <<"\t center ratio\t"<< support_center_ratio<<endl;
+
+    if (support_area_ratio < stability_threshold_area || support_center_ratio < stability_threshold_center) return -10000;
+
+    float support_score = support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;
+    cout << "support score is\t" << support_score<<endl;
+    return support_score;
 }
-int CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
+float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
 {
-    return 0;
+    int i,j,tmp_dh,tmp_area,contacted_area;
+    contacted_area = 0;
+    tmp_area = 0;
+    for (j = gap.down; j <= gap.top; j++)
+    {
+        tmp_dh = 0;
+        for (i = max(gap.left - Max_Allowed_Gap_Size , 0); i < gap.left; i++)
+        {
+            if (Height_Map[i][j].Height > gap.z_dim)
+            {
+                tmp_dh = min(box.dim3, Height_Map[i][j].Height - gap.z_dim);
+            } 
+        }
+        tmp_area += tmp_dh;
+    }
+    cout <<"left contacted area:\t"<<tmp_area<<endl;
+    contacted_area += tmp_area;
+    
+    tmp_area = 0;
+    for (j = gap.down; j <= gap.top; j++)
+    {
+        tmp_dh = 0;
+        
+        for (i = gap.right + 1; i <= min(gap.right + Max_Allowed_Gap_Size,pallet_x); i++)
+        {
+            if (Height_Map[i][j].Height > gap.z_dim)
+            {
+                tmp_dh = min(box.dim3, Height_Map[i][j].Height - gap.z_dim);
+                break;
+            } 
+        }
+        tmp_area += tmp_dh;
+    }
+    cout <<"right contacted area:\t"<<tmp_area<<endl;
+    contacted_area += tmp_area;
+    
+    tmp_area = 0;
+    for (i = gap.left; i <= gap.right; i++)
+    {
+        tmp_dh = 0;
+        for (j = gap.top + 1; j <= min(gap.top + Max_Allowed_Gap_Size,pallet_y); j++)
+        {
+            if (Height_Map[i][j].Height > gap.z_dim)
+            {
+                tmp_dh = min(box.dim3, Height_Map[i][j].Height - gap.z_dim);
+                break;
+            } 
+        }
+        tmp_area += tmp_dh;
+    }
+    cout <<"top contacted area:\t"<<tmp_area<<endl;
+    contacted_area += tmp_area;
+    
+    tmp_area = 0;
+    for (i = gap.left; i <= gap.right; i++)
+    {
+        tmp_dh = 0;
+        for (j = max(gap.down - Max_Allowed_Gap_Size, 0); j < gap.down; j++)
+        {
+            if (Height_Map[i][j].Height > gap.z_dim)
+            {
+                tmp_dh = min(box.dim3, Height_Map[i][j].Height - gap.z_dim);
+            } 
+        }
+        tmp_area += tmp_dh;
+    }
+    cout <<"down contacted area:\t"<<tmp_area<<endl;
+    contacted_area += tmp_area;
+    
+    int all_area =  (box.dim1 + box.dim2) * box.dim3 * 2;
+
+    cout <<" all contacted area\t"<<contacted_area<<"\tall area\t"<<all_area<<endl;
+
+    float contacted_area_score = (float)contacted_area / (float) all_area;
+    cout<<"contacted score is\t" << contacted_area_score<<endl;
+    return contacted_area_score;
 }
-int CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
+float CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
 {
     return 0;
 }
