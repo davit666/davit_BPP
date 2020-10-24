@@ -31,6 +31,7 @@ CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,i
 
 	
     //initialze pallet height map
+    
     Height_Map = new Grid*[pallet_x+1];
     for (int i = 0; i < pallet_x + 1; i++)
     {
@@ -39,6 +40,13 @@ CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,i
     Initialize_Pallet(Height_Map,pallet_x,pallet_y,pallet_z,have_wall);
     gaps_set.resize(pallet_z + 1);
     Find_Gaps_on_z(0);
+
+    island_matrix.resize(pallet_x + 1);
+    for (int i = 0; i< pallet_x +1; i++)
+    {
+        island_matrix[i].resize(pallet_y +1);
+    }
+
 }
 void CPlanning_Box::Initialize_Pallet(Grid **Height_Map, int px, int py, int pz,bool have_wall)
 {
@@ -62,7 +70,7 @@ void CPlanning_Box::Initialize_Pallet(Grid **Height_Map, int px, int py, int pz,
 				Height_Map[i][j].Grid_x = i;
 				Height_Map[i][j].Grid_y = j;
 			}
-    // Height_Map[10][10].Height = 2;
+    // Height_Map[pallet_x-10][10].Height = 12;
     cout <<"pallet initialized" << endl;
 	return;
 }
@@ -378,7 +386,7 @@ float CPlanning_Box::Evaluate_Support(boxinfo box, gap_range gap)
     return 0;
 }
 
-float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution)
+float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution) 
 {
     
     float score;
@@ -586,9 +594,59 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
 }
 float CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
 {
-    return 0;
-}
+    for (int i =1; i < pallet_x; i++)
+    {
+        for (int j = 1; j < pallet_y; j++)
+        {
+            if ((i>= gap.left) && (i<= gap.right) && (j>= gap.down) && (j<= gap.top))
+            {
+                island_matrix[i][j] = 1;
+            }
+            else if (Height_Map[i][j].Height>= box.dim3 + gap.z_dim - allow_z_err && Height_Map[i][j].Height<= box.dim3 + gap.z_dim + allow_z_err)
+            {
+                island_matrix[i][j] = 1;
+            }
+            else
+            {
+                island_matrix[i][j] = 0;
+            }
+            // cout<<island_matrix[i][j];
+        }
+        // cout<<endl;
+    }
+    
+    int island_area = Find_Island_Area(gap.left,gap.down);
 
+    cout <<"created island area\t"<<island_area<<endl;
+    cout <<"box area       \t"<<gap.area <<endl;
+    cout<<box.dim1 * box.dim2 <<endl;
+
+    float ceated_area_ratio = (float)(island_area - box.dim1 * box.dim2) / (float) (pallet_x * pallet_y);
+    cout <<"created area ratio\t"<< ceated_area_ratio <<endl;
+    return ceated_area_ratio;
+}
+int CPlanning_Box::Find_Island_Area(int x,int y)
+{
+    int area = 0;
+    if ((x <=0)||(y<=0)||(x>=pallet_x)||(y>=pallet_y)) return 0;
+    if (island_matrix[x][y] == 1)
+    {
+        area ++;
+        island_matrix[x][y] = 0;
+        area += Find_Island_Area(x ,y - 1);
+        area += Find_Island_Area(x - 1,y);
+        area += Find_Island_Area(x ,y + 1);
+        area += Find_Island_Area(x + 1,y);
+        return area;
+    }
+    else
+    {
+        return 0;
+    }
+    
+    
+
+}
 
 
 

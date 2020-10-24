@@ -108,11 +108,13 @@ class CPlanning_Box
     float Evaluate_Range(boxinfo box, gap_range gap);
     float Evaluate_Support(boxinfo box, gap_range gap);
 
-    // int Find_Best_Pos_in_Gap(boxinfo box, gap_range gap,gap_info &gap_solution);
+    float Find_Best_Pos_in_Gap(boxinfo box, gap_range gap,gap_info &gap_solution);
     float Evaluate_Area_Supported(boxinfo box,gap_range gap);
     float Evaluate_Area_Contacted(boxinfo box,gap_range gap);
     float Evaluate_Area_Created(boxinfo box,gap_range gap);
-    float Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution);
+    int Find_Island_Area(int x,int y);
+
+    // float Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &gap_solution);
 
 
     void Place_Box_and_Update(boxinfo &box,gap_info &best_gap);
@@ -121,6 +123,7 @@ class CPlanning_Box
     void Update_Gaps(boxinfo box, int lowest_height_to_update);
 
     float Calcul_Occupacy_Ratio(boxinfo &box);
+
 
     public:
     int pallet_x,pallet_y,pallet_z;
@@ -146,6 +149,8 @@ class CPlanning_Box
     vector<int> temp_gaps_height;
     
     vector<boxinfo> packed_boxes;
+
+    vector<vector<int>> island_matrix; 
 
 
 

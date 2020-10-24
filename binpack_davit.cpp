@@ -352,7 +352,7 @@ int main()
 	start = clock();   
 
 
-	while(loop <1)
+	while(loop <100)
 	{
 		if ((PlanningBox.pallet_is_full == true)||(change_pallet_flag == true))
 		{
@@ -360,7 +360,7 @@ int main()
 			// PlanningBox.clear();
 			change_pallet_flag = false;
 		}
-		int box_rand = (rand()%4659) % 46;
+		int box_rand = (rand()%46) % 46;
 		// int box_rand = rand() % 46;
     	place_box = Box_size[box_rand];
 		
