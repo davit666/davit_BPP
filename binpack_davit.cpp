@@ -334,48 +334,82 @@ int main()
 	// for (int i = 0;i < 46;i++)
 	// 	PlanningBox.BoxType.push_back(Box_size[i]);
 
-	int box_num = 0;
-	int packed_num = 0;
+	int box_num = 0;//箱子数量
+	int packed_num = 0;//当前码垛轮次已经放置箱子数量
 	long long file_num = 1;
 	bool result_planning;
 
 	ofstream outfile;
 	
     boxinfo place_box;
-	bool change_pallet_flag = false;
+	bool change_pallet_flag = false;//是否更换新垛
 
 
 	int loop  = 0;
-   
+	int loop_num = 1; //总共测试码垛轮数
+
+
+	//生成固定的箱子序列（码垛轮数 * 每轮100个）
+	vector<vector<int>> rand_mat;
+	rand_mat.resize(loop_num);
+	for (int i;i < loop_num;i++)
+	{
+		rand_mat[i].resize(100);
+		for (int j = 0; j<100; j++)
+		{
+			int r = rand() % 46;
+			rand_mat[i][j] = r;
+		}
+	}
+
+
+
+
+   //计时开始
 	clock_t start, finish;    
 	double  duration;
 	start = clock();   
+	
 
 
-	while(loop <100)
+	while(loop <loop_num)
 	{
+		
+		//判断是否更换托盘（是否重新启动）
 		if ((PlanningBox.pallet_is_full == true)||(change_pallet_flag == true))
 		{
 			PlanningBox.Clear_CPlanning_Box();
 			// PlanningBox.clear();
 			change_pallet_flag = false;
 		}
-		int box_rand = (rand()%46) % 46;
-		// int box_rand = rand() % 46;
+
+		//生成要放置的箱子
+		int box_rand = rand_mat[loop][packed_num];
     	place_box = Box_size[box_rand];
+    	// cout<<"loop\t"<<loop<<"\tpacked\t"<<packed_num<<endl; 
+		// cout <<"box is:\t"<<box_rand<<endl;
 		
+		//判断是否能放
 		result_planning = PlanningBox.Place_Box_to_Gap(place_box);
+		
+		//能放
 		if (result_planning)
 		{
 			box_num++;
 			packed_num++;
 			cout <<"box number:\t"<<box_num<<"\tplaced, current packed box number is:\t"<<packed_num<<endl;
 		}
+		
+		//不能放
 		else
 		{
-			loop ++;
+			//当前轮次停止
+			loop ++; 
 			change_pallet_flag = true;
 			packed_num = 0;
+			
+
+			//更新要写入的信息
 			bool write_flag = true;
 			for (int i = 0;i < packed_box_all.size();i++)
 			{
@@ -397,6 +431,7 @@ int main()
 					if (j == packed_box_all[i].size())write_flag = false;
 				}
 			}
+			//将信息写入文件
 			if (write_flag)
 			{
 				outfile.open("result.txt", ios::app);
@@ -430,6 +465,8 @@ int main()
 	}
 
     cout<<"simulation ended"<<endl;
+	
+    //计时结束
 	printf( "Time to do %d BBP loops is ", loop);       
 	finish = clock();    
 	duration = (double)(finish - start) / CLOCKS_PER_SEC;    
