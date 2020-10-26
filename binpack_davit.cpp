@@ -346,19 +346,39 @@ int main()
 
 
 	int loop  = 0;
-	int loop_num = 1; //总共测试码垛轮数
+	int loop_num = 10; //总共测试码垛轮数 
 
 
 	//生成固定的箱子序列（码垛轮数 * 每轮100个）
+
+	vector<int> rand_arr;
+	rand_arr.resize(loop_num * 100);
+
+	std::ifstream infile("rand_numbers.txt");
+	int rand_count = 0;
+	int r;
+	while(infile >> r)
+	{
+		rand_arr[rand_count] = r;
+		rand_count ++;
+		if(rand_count >= loop_num * 100)
+		{
+			break;
+		}
+	}
+	
 	vector<vector<int>> rand_mat;
 	rand_mat.resize(loop_num);
-	for (int i;i < loop_num;i++)
+	for (int i = 0;i < loop_num;i++)
 	{
 		rand_mat[i].resize(100);
-		for (int j = 0; j<100; j++)
+	}
+	for (int i = 0;i < loop_num;i++)
+	{
+		for(int j = 0; j < 100;j++)
 		{
-			int r = rand() % 46;
-			rand_mat[i][j] = r;
+			rand_mat[i][j] = rand_arr[i * 100 + j ];
+			cout << rand_mat[i][j];
 		}
 	}
 
@@ -391,6 +411,7 @@ int main()
 		
 		//判断是否能放
 		result_planning = PlanningBox.Place_Box_to_Gap(place_box);
+		// break;
 		
 		//能放
 		if (result_planning)
@@ -398,6 +419,10 @@ int main()
 			box_num++;
 			packed_num++;
 			cout <<"box number:\t"<<box_num<<"\tplaced, current packed box number is:\t"<<packed_num<<endl;
+			// if(packed_num >=4)
+			// {
+			// 	break;
+			// }
 		}
 		
 		//不能放

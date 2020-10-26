@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <math.h>
 #include <set>
-
+#include<errno.h>
 
 using namespace std;
 const int LEFT = 1;
@@ -28,7 +28,7 @@ const int RIGHT_DOWN = 7;
 const int RIGHT_TOP = 8;
 
 const int Min_Box_Size = 22; //最小箱子最小边长
-const int Max_Allowed_Gap_Size = 5;  //可接受的不可用缝隙最大边长
+const int Max_Allowed_Gap_Size = 3;  //可接受的不可用缝隙最大边长
 const int available_gaps_num_limit = 20; //每次判断放置位置时最多比较的箱子数量
 
 const float stability_threshold_area = 0.1; //箱子在支撑面积上的容许程度
@@ -39,10 +39,11 @@ const int z_allowed_over_pallet = 0; //允许箱子超过龙车的高度
 
 //用于遗传算法的权重参数
 const float weight_height = 0.6;
-const float weight_range = 0.5;
+const float weight_range = 0.9;
 const float weight_support = 0;
 const float weight_area_supported_area = 0.1;
 const float weight_area_supported_center = 0.1;
+const float weight_area_supported_volume = 0;
 const float weight_area_contacted = 0.9;
 const float weight_area_created = 0.6;
 

@@ -239,7 +239,7 @@ int CPlanning_Box::Find_Rectangle_area(vector<vector<int>> available_matirx,int 
 
 		}
 	}
-    cout <<"now here is \t"<<z<<"\tfloor, size is\t"<< gaps_set[z].size()<<"\tmax area is:\t"<<maxA<<endl;
+    // cout <<"now here is \t"<<z<<"\tfloor, size is\t"<< gaps_set[z].size()<<"\tmax area is:\t"<<maxA<<endl;
 	return gaps_set[z].size();
 }
 bool CPlanning_Box::Place_Box_to_Gap(boxinfo &box)
@@ -260,7 +260,7 @@ bool CPlanning_Box::Place_Box_to_Gap(boxinfo &box)
     {
         cout << "no solution" << endl;
         pallet_is_full = true;
-        cout <<"heap, number:\t"<<gaps_height.size()<<endl;
+        // cout <<"heap, number:\t"<<gaps_height.size()<<endl;
         return false;
     }
     
@@ -284,7 +284,6 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
     //从当前空隙信息中拿出最多x个可放置当前箱子的空隙，记录于gap-solutions中
     
     vector<gap_info> gap_solutions;//用于存储空隙高级信息的向量
-    // cout<<gap_solutions.size()<<endl;;
     temp_gaps_height.clear();//用于临时存储堆结构中的高度
     
     while (gap_solutions.size()< available_gaps_num_limit)//当目前找到的解数量小于x
@@ -298,7 +297,7 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
         //遍历 gaps-set【z】中所有空隙
         for (int i = 0; i < gaps_set[z].size();i++)
         {
-            if (gaps_set[z][i].z_dim + box.dim3<= pallet_z)//不超高
+            if (gaps_set[z][i].z_dim + box.dim3<= pallet_z + z_allowed_over_pallet)//不超高
             {
 
                 if (((gaps_set[z][i].right-gaps_set[z][i].left + 1)>= box.dim1)&&((gaps_set[z][i].top-gaps_set[z][i].down + 1)>= box.dim2))//箱子可以放进空隙
@@ -307,10 +306,9 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
                     temp_gap.z = z;
                     temp_gap.index = i;
                     temp_gap.box_orientation = 0;
-                    if (z+ box.dim3 <= pallet_z +z_allowed_over_pallet)//不超高
-                    {
-                        gap_solutions.push_back(temp_gap);//将该空隙的高级信息计入gap-solutions中
-                    }
+                    
+                    gap_solutions.push_back(temp_gap);//将该空隙的高级信息计入gap-solutions中
+                    
                 }
                 if (((gaps_set[z][i].right-gaps_set[z][i].left + 1)>= box.dim2)&&((gaps_set[z][i].top-gaps_set[z][i].down)>= box.dim1 + 1))//箱子旋转后可以放入空隙
                 {
@@ -319,11 +317,8 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
                     temp_gap_r.index = i;
                     temp_gap_r.box_orientation = 1;
 
-                    if (z+ box.dim3 <= pallet_z +z_allowed_over_pallet)
-                    {
-                        cout<<gap_solutions.size()<<endl;
-                        gap_solutions.push_back(temp_gap_r);
-                    }
+                    gap_solutions.push_back(temp_gap_r);
+                    
                 }
             }
         }
@@ -335,7 +330,7 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
     }
     temp_gaps_height.clear(); //清空临时存储
 
-    cout << "number of availale gaps:\t"<<gap_solutions.size()<<endl;
+    // cout << "number of availale gaps:\t"<<gap_solutions.size()<<endl;
     return gap_solutions;
 }
 gap_info CPlanning_Box::Find_Best_Gap(boxinfo box, vector<gap_info> gap_solutions)
@@ -353,7 +348,7 @@ gap_info CPlanning_Box::Find_Best_Gap(boxinfo box, vector<gap_info> gap_solution
             best_gap = gap_solutions[i];
         }
     }
-    cout <<"best score is:\t"<<best_score<<endl;
+    // cout <<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%best score is:\t"<<best_score<<endl;
     return best_gap;
 }
 float CPlanning_Box::Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &gap_solution)
@@ -370,20 +365,20 @@ float CPlanning_Box::Find_Best_Position_and_Evaluate_Gap(boxinfo box,gap_info &g
     float gap_score = 0;
     gap_range gap = gaps_set[gap_solution.z][gap_solution.index];
     
-    // int box_direction = gap_solution.box_orientation;
-    // cout << gap.left<<"\t"<< gap.right<<"\t"<< gap.down<<"\t"<< gap.top<<"\t"<<endl;
-    // cout <<box_direction<<endl;
 
     gap_score += Find_Best_Pos_in_Gap(box,gap,gap_solution); //寻找空隙中最好位置，返回位置分数
-    if (gap_score < 0) return 0;  //分数为负数证明 支撑不稳  
+    // cout<<"^^^^^^^^^^^^^^^^^^^conner best score is:\t"<<gap_score<<"\t"<<gap_solution.box_position<<endl;
+    if (gap_score < 0) //分数为负数证明 支撑不稳 
+    {
+        // cout <<" cannot support"<<endl;
+        return 0;
+    } 
+ 
     
     gap_score += Evaluate_Height(box,gap) * weight_height; //计算高度分数
     gap_score += Evaluate_Range(box,gap) * weight_range; // 计算范围分数
     gap_score += Evaluate_Support(box,gap) * weight_support; //计算支撑分数
 
-    
-    // cout <<"midside function best position:\t" <<gap_solution.box_position<<endl;
-    // cout <<"midside function box dim"<<box.dim1<<" "<<box.dim2<<endl;
 
     return gap_score;
 }
@@ -392,7 +387,7 @@ float CPlanning_Box::Evaluate_Height(boxinfo box, gap_range gap)
 {
     //计算高度分数
     float score_height = 1 - (float)gap.z_dim/ (float) pallet_z;
-    cout<<"height score: \t"<< score_height<<endl;
+    // cout<<"height score: \t"<< score_height<<endl;
     return  score_height;
 }
 float CPlanning_Box::Evaluate_Range(boxinfo box, gap_range gap)
@@ -417,7 +412,7 @@ float CPlanning_Box::Evaluate_Range(boxinfo box, gap_range gap)
     if (delta_y <= cross_point_y) score_y =  delta_y *(-1 / ma) + 1;
     else score_y = delta_y / (py - mb) - mb / (py - mb);
 
-    cout<<"range score:\t"<<(score_x * pallet_y + score_y * pallet_x)/ (pallet_y + pallet_x)<<endl;
+    // cout<<"range score:\t"<<(score_x * pallet_y + score_y * pallet_x)/ (pallet_y + pallet_x)<<endl;
     
     return (score_x * pallet_y + score_y * pallet_x)/ (pallet_y + pallet_x);
 }
@@ -437,8 +432,8 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
     
 
     vector<int> positions = {LEFT_DOWN,LEFT_TOP,RIGHT_TOP,RIGHT_DOWN};
-    cout <<"box info:\t"<< box.dim1<<"\t"<<box.dim2<<"\t"<<box.dim3<<endl;;
-    cout <<"original gap:\t"<<gap.left<<"\t"<<gap.right<<"\t"<<gap.top<<"\t"<<gap.down<<"\t"<<endl;
+    // cout <<"box info:\t"<< box.dim1<<"\t"<<box.dim2<<"\t"<<box.dim3<<endl;;
+    // cout <<"original gap:\t"<<gap.left<<"\t"<<gap.right<<"\t"<<gap.top<<"\t"<<gap.down<<"\t"<<endl;
     
     //初始化最好位置与最好位置分数
     int best_position = LEFT_DOWN;
@@ -493,7 +488,7 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
                 break;
             }
         }
-        cout <<"new\t"<<positions[i]<<"\tgap:\t"<<temp_gap.left<<"\t"<<temp_gap.right<<"\t"<<temp_gap.top<<"\t"<<temp_gap.down<<"\t"<<endl;
+        // cout <<endl<<"new\t"<<positions[i]<<"\tgap:\t"<<temp_gap.left<<"\t"<<temp_gap.right<<"\t"<<temp_gap.top<<"\t"<<temp_gap.down<<"\t"<<endl;
         
         
         score += Evaluate_Area_Supported(box,temp_gap);//计算角落的支撑分数
@@ -508,9 +503,9 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
         }
     }
     gap_solution.box_position = best_position;
-    // cout <<"inside function best score:\t" <<best_score<<endl;
+    // cout <<endl<<"inside function best score:\t" <<best_score<<endl;
     // cout <<"inside function best orientation:\t" <<gap_solution.box_orientation<<endl;
-    // cout <<"inside function best position:\t" <<gap_solution.box_position<<endl;
+    // cout <<"inside function best position:\t" <<gap_solution.box_position<<endl<<endl;
     // cout <<"inside function box dim"<<box.dim1<<" "<<box.dim2<<endl;
 
     return best_score;
@@ -520,12 +515,14 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
 {
     //计算角落的支撑分数
     //包括面积支撑与重心支撑
+    float support_score = 0;
 
     //计算箱子重心位置
     float box_center_x = ((float)gap.left + (float)gap.right)/2;
     float box_center_y = ((float)gap.top + (float)gap.down)/2;
     
     //初始化参数
+    int support_volume = 0; 
     int support_area = 0;//支撑面积
     float support_center_x;//支撑面重心x坐标
     float support_center_y;//支撑面重心y坐标
@@ -538,6 +535,7 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
         for (int j = gap.down; j <= gap.top; j++)
         {
             tmp_h = Height_Map[i][j].Height;
+            support_volume += tmp_h;
             if ((tmp_h <= gap.z_dim)&&( tmp_h >= gap.z_dim - allow_z_err))//该点高度在支撑高度容差内能够支撑箱子
             {
                 support_center_x += i;
@@ -551,25 +549,32 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
     //计算底部支撑面积的重心位置
     support_center_x /= (float) support_area;
     support_center_y /= (float) support_area;
-    cout <<"area\t"<<support_area<<"\tcenter\t"<<support_center_x <<"\t"<<support_center_y<<endl;
+    // cout <<"area\t"<<support_area<<"\tcenter\t"<<support_center_x <<"\t"<<support_center_y<<endl;
 
     float support_area_ratio = (float) support_area / (float) gap.area;//计算支撑面积利用率
+    float support_volume_ratio;
+    if (gap.area * gap.z_dim ==0)
+    {
+        support_volume_ratio = 1;
+    }
+    else
+    {
+        support_volume_ratio = (float) support_volume / (float) (gap.area * gap.z_dim);
+    }
 
-    // float center_diff = sqrt(pow((support_center_x-box_center_x),2) + pow((support_center_y-box_center_y),2));
-    // float box_half_diagnal_length = sqrt(pow((float)box.dim1,2) + pow((float)box.dim2,2))/2;
-    // cout <<"diff\t"<<center_diff<<"\thalf_diag\t"<<box_half_diagnal_length<<endl;
-    
-    // float support_center_ratio = 1 - center_diff / box_half_diagnal_length;
     float support_center_ratio_x = abs(support_center_x-box_center_x) / ((float)box.dim1/2);
     float support_center_ratio_y = abs(support_center_y-box_center_y) / ((float)box.dim2/2);
     float support_center_ratio = 1 - max(support_center_ratio_x,support_center_ratio_y);//计算支撑重心与箱子重心的偏移程度
 
-    cout <<"area ratio \t"<<support_area_ratio <<"\t center ratio\t"<< support_center_ratio<<endl;
+    // cout <<"area ratio \t"<<support_area_ratio <<"\t center ratio\t"<< support_center_ratio<<endl;
 
     if (support_area_ratio < stability_threshold_area || support_center_ratio < stability_threshold_center) return -10000;//若支撑面积利用率过小或重心偏移程度过大，视为不可支撑
 
-    float support_score = support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;//返回面积利用率分数与重心偏移率分数
-    cout << "support score is\t" << support_score<<endl;
+    support_score = support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;//返回面积利用率分数与重心偏移率分数
+
+    support_score +=  (support_volume_ratio * weight_area_supported_volume);
+
+    // cout << "support score is\t" << support_score<<endl; 
     return support_score;
 }
 float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
@@ -591,7 +596,7 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
         }
         tmp_area += tmp_dh;
     }
-    cout <<"left contacted area:\t"<<tmp_area<<endl;
+    // cout <<"left contacted area:\t"<<tmp_area<<endl;
     contacted_area += tmp_area;
     
     tmp_area = 0;
@@ -609,7 +614,7 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
         }
         tmp_area += tmp_dh;
     }
-    cout <<"right contacted area:\t"<<tmp_area<<endl;
+    // cout <<"right contacted area:\t"<<tmp_area<<endl;
     contacted_area += tmp_area;
     
     tmp_area = 0;
@@ -626,7 +631,7 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
         }
         tmp_area += tmp_dh;
     }
-    cout <<"top contacted area:\t"<<tmp_area<<endl;
+    // cout <<"top contacted area:\t"<<tmp_area<<endl;
     contacted_area += tmp_area;
     
     tmp_area = 0;
@@ -642,14 +647,14 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
         }
         tmp_area += tmp_dh;
     }
-    cout <<"down contacted area:\t"<<tmp_area<<endl;
+    // cout <<"down contacted area:\t"<<tmp_area<<endl;
     contacted_area += tmp_area;
     
     int all_area =  (box.dim1 + box.dim2) * box.dim3 * 2;
-    cout <<" all contacted area\t"<<contacted_area<<"\tall area\t"<<all_area<<endl;
+    // cout <<" all contacted area\t"<<contacted_area<<"\tall area\t"<<all_area<<endl;
 
     float contacted_area_score = (float)contacted_area / (float) all_area;//计算接触面积利用率
-    cout<<"contacted score is\t" << contacted_area_score<<endl;
+    // cout<<"contacted score is\t" << contacted_area_score<<endl;
     return contacted_area_score;
 }
 float CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
@@ -679,12 +684,12 @@ float CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
     
     int island_area = Find_Island_Area(gap.left,gap.down);//寻找01矩阵中包含原箱子的最大面积
 
-    cout <<"created island area\t"<<island_area<<endl;
-    cout <<"box area       \t"<<gap.area <<endl;
-    cout<<box.dim1 * box.dim2 <<endl;
+    // cout <<"created island area\t"<<island_area<<endl;
+    // cout <<"box area       \t"<<gap.area <<endl;
+    // cout<<box.dim1 * box.dim2 <<endl;
 
     float ceated_area_ratio = (float)(island_area - box.dim1 * box.dim2) / (float) (pallet_x * pallet_y);//计算面积利用率
-    cout <<"created area ratio\t"<< ceated_area_ratio <<endl;
+    // cout <<"created area ratio\t"<< ceated_area_ratio <<endl;
     return ceated_area_ratio;
 }
 int CPlanning_Box::Find_Island_Area(int x,int y)
@@ -859,15 +864,15 @@ void CPlanning_Box::Update_Gaps(boxinfo box, int lowest_height_to_update)
     temp_gaps_height.clear();
 
     Find_Gaps_on_z(box.coz+box.packz);//计算箱子放置后顶面新生成的高度的所有空隙，更新空隙信息
-    cout <<"current gap height size is:\t"<<gaps_height.size()<<endl;
+    // cout <<"current gap height size is:\t"<<gaps_height.size()<<endl;
     
 
     //print 当前所有可放置箱子高度信息
-    for (int h : gaps_height)
-    {
-        cout << h <<"\t";
-    }
-    cout<<endl;
+    // for (int h : gaps_height)
+    // {
+    //     cout << h <<"\t";
+    // }
+    // cout<<endl;
 }
 float CPlanning_Box::Calcul_Occupacy_Ratio(boxinfo &box)
 {
