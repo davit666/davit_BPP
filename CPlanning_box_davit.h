@@ -28,12 +28,12 @@ const int RIGHT_DOWN = 7;
 const int RIGHT_TOP = 8;
 
 const int Min_Box_Size = 22; //最小箱子最小边长
-const int Max_Allowed_Gap_Size = 3;  //可接受的不可用缝隙最大边长
+const int Max_Allowed_Gap_Size = 5;  //可接受的不可用缝隙最大边长
 const int available_gaps_num_limit = 20; //每次判断放置位置时最多比较的箱子数量
 
 const float stability_threshold_area = 0.1; //箱子在支撑面积上的容许程度
-const float stability_threshold_center = 0.4;//箱子在中心偏移上的容许程度
-const int allow_z_err = 3; //箱子判断支撑底面时的高度容差
+const float stability_threshold_center = 0.7;//箱子在中心偏移上的容许程度
+const int allow_z_err = 2; //箱子判断支撑底面时的高度容差
 const int z_allowed_over_pallet = 0; //允许箱子超过龙车的高度
 
 
@@ -43,9 +43,10 @@ const float weight_range = 0.9;
 const float weight_support = 0;
 const float weight_area_supported_area = 0.1;
 const float weight_area_supported_center = 0.1;
-const float weight_area_supported_volume = 0;
+const float weight_area_supported_volume = 0.1;
 const float weight_area_contacted = 0.9;
 const float weight_area_created = 0.6;
+const float weight_area_corner = 0.05;
 
 
 
@@ -117,6 +118,7 @@ class CPlanning_Box
     float Evaluate_Area_Contacted(boxinfo box,gap_range gap);//计算给定角落接触评分
     float Evaluate_Area_Created(boxinfo box,gap_range gap); //计算给定角落贡献评分
     int Find_Island_Area(int x,int y);//寻找01矩阵中包含点xy的最大面积
+    float Evaluate_Area_Corner(boxinfo box,gap_range gap);
 
     float Evaluate_Height(boxinfo box, gap_range gap); //计算单个空隙高度评分
     float Evaluate_Range(boxinfo box, gap_range gap); //计算单个空隙范围评分

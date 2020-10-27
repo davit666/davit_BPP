@@ -269,7 +269,7 @@ bool CPlanning_Box::Place_Box_to_Gap(boxinfo &box)
     gap_info best_gap = Find_Best_Gap(box,gap_solutions);//从gap solutions中寻找最好gap
     cout <<"best gap info is :\t"<<best_gap.z<<"  "<<best_gap.index<<endl;
     cout<< "orientation and position:\t "<<best_gap.box_orientation<<" "<<best_gap.box_position<<endl;
-    cout <<"best gap range is :\t"<<gaps_set[best_gap.z][best_gap.index].left<<"  "<<gaps_set[best_gap.z][best_gap.index].right<<"  "<<gaps_set[best_gap.z][best_gap.index].top<<"  "<<gaps_set[best_gap.z][best_gap.index].down<<endl;
+    cout <<"best gap range is :\t"<<gaps_set[best_gap.z][best_gap.index].left<<"  "<<gaps_set[best_gap.z][best_gap.index].right<<"  "<<gaps_set[best_gap.z][best_gap.index].down<<"  "<<gaps_set[best_gap.z][best_gap.index].top<<endl;
     gap_solutions.clear();    
     
     
@@ -407,9 +407,13 @@ float CPlanning_Box::Evaluate_Range(boxinfo box, gap_range gap)
     float cross_point_x = px * ma / (px - mb + ma);
     float cross_point_y = py * ma / (py - mb + ma);
     
-    if (delta_x <= cross_point_x) score_x = delta_x *(-1 / ma) + 1;
+    // if (delta_x <= cross_point_x) score_x = delta_x *(-1 / ma) + 1;
+    if (delta_x <= ma) score_x = delta_x *(-1 / ma) + 1;
+    else if (delta_x < mb) score_x = delta_x /(ma - mb) + ma/(mb -ma);
     else score_x = delta_x / (px - mb) - mb / (px - mb);
-    if (delta_y <= cross_point_y) score_y =  delta_y *(-1 / ma) + 1;
+    // if (delta_y <= cross_point_y) score_y =  delta_y *(-1 / ma) + 1;
+    if (delta_y <= ma) score_y =  delta_y *(-1 / ma) + 1;
+    else if (delta_y < mb) score_x = score_y = delta_y /(ma - mb) + ma/(mb -ma);
     else score_y = delta_y / (py - mb) - mb / (py - mb);
 
     // cout<<"range score:\t"<<(score_x * pallet_y + score_y * pallet_x)/ (pallet_y + pallet_x)<<endl;
@@ -433,6 +437,7 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
 
     vector<int> positions = {LEFT_DOWN,LEFT_TOP,RIGHT_TOP,RIGHT_DOWN};
     // cout <<"box info:\t"<< box.dim1<<"\t"<<box.dim2<<"\t"<<box.dim3<<endl;;
+    // cout<<"\n@@@@@gap number\t"<<gap_solution.z<<"\t"<<gap_solution.index<<"\t"<<gap_solution.box_orientation<<endl;
     // cout <<"original gap:\t"<<gap.left<<"\t"<<gap.right<<"\t"<<gap.top<<"\t"<<gap.down<<"\t"<<endl;
     
     //初始化最好位置与最好位置分数
@@ -488,13 +493,14 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
                 break;
             }
         }
-        // cout <<endl<<"new\t"<<positions[i]<<"\tgap:\t"<<temp_gap.left<<"\t"<<temp_gap.right<<"\t"<<temp_gap.top<<"\t"<<temp_gap.down<<"\t"<<endl;
+        // cout <<endl<<"new\t"<<positions[i]<<"\tgap:\t"<<temp_gap.left<<"\t"<<temp_gap.right<<"\t"<<temp_gap.down<<"\t"<<temp_gap.top<<"\t"<<endl;
         
         
         score += Evaluate_Area_Supported(box,temp_gap);//计算角落的支撑分数
         if (score <0) return -10000;//分数负数表示无法支撑
         score += Evaluate_Area_Contacted(box,temp_gap) * weight_area_contacted;//计算角落的接触分数
         score += Evaluate_Area_Created(box,temp_gap) * weight_area_created; //计算角落的贡献分数
+        score += Evaluate_Area_Corner(box,temp_gap) *weight_area_corner;
 
         if (score > best_score)//更新最好位置
         {
@@ -524,8 +530,8 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
     //初始化参数
     int support_volume = 0; 
     int support_area = 0;//支撑面积
-    float support_center_x;//支撑面重心x坐标
-    float support_center_y;//支撑面重心y坐标
+    float support_center_x = 0;//支撑面重心x坐标
+    float support_center_y = 0;//支撑面重心y坐标
 
     int tmp_h;
 
@@ -541,14 +547,36 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
                 support_center_x += i;
                 support_center_y += j; 
                 support_area ++;
+
             }
+            // if(gap.z_dim ==18)
+            // {
+            //     if ((tmp_h <= gap.z_dim)&&( tmp_h >= gap.z_dim - allow_z_err))
+            //     {
+            //         cout<<1;
+            //     }
+            //     else
+            //     {
+            //         cout<<0;
+            //     }
+                
+            // } 
         }
+        // if(gap.z_dim ==18)
+        // {
+        //     cout<<endl;
+        // }
+
     }
 
 
     //计算底部支撑面积的重心位置
-    support_center_x /= (float) support_area;
-    support_center_y /= (float) support_area;
+    if (support_area >0)
+    {
+        support_center_x /= (float) support_area;
+        support_center_y /= (float) support_area;
+    }
+    
     // cout <<"area\t"<<support_area<<"\tcenter\t"<<support_center_x <<"\t"<<support_center_y<<endl;
 
     float support_area_ratio = (float) support_area / (float) gap.area;//计算支撑面积利用率
@@ -564,12 +592,17 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
 
     float support_center_ratio_x = abs(support_center_x-box_center_x) / ((float)box.dim1/2);
     float support_center_ratio_y = abs(support_center_y-box_center_y) / ((float)box.dim2/2);
+    // cout <<"support_center_ratio_x\t"<<support_center_ratio_x<<"\tsupport_center_ratio_y\t"<<support_center_ratio_y <<endl;
+
     float support_center_ratio = 1 - max(support_center_ratio_x,support_center_ratio_y);//计算支撑重心与箱子重心的偏移程度
 
     // cout <<"area ratio \t"<<support_area_ratio <<"\t center ratio\t"<< support_center_ratio<<endl;
 
-    if (support_area_ratio < stability_threshold_area || support_center_ratio < stability_threshold_center) return -10000;//若支撑面积利用率过小或重心偏移程度过大，视为不可支撑
-
+    if (support_area_ratio < stability_threshold_area || support_center_ratio < stability_threshold_center)//若支撑面积利用率过小或重心偏移程度过大，视为不可支撑
+    {
+        // cout<<"!!!!!annot support"<<endl;
+        return -10000;
+    }
     support_score = support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;//返回面积利用率分数与重心偏移率分数
 
     support_score +=  (support_volume_ratio * weight_area_supported_volume);
@@ -683,7 +716,17 @@ float CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
     }
     
     int island_area = Find_Island_Area(gap.left,gap.down);//寻找01矩阵中包含原箱子的最大面积
-
+    
+    // island_area += Find_Island_Area(min(gap.left-5,0),gap.down);
+    // island_area += Find_Island_Area(gap.left,min(gap.down-5,0));
+    // island_area += Find_Island_Area(max(gap.right+5,pallet_x),gap.down);
+    // island_area += Find_Island_Area(gap.right,min(gap.down-5,0));
+    // island_area += Find_Island_Area(min(gap.left-5,0),gap.top);
+    // island_area += Find_Island_Area(gap.left,max(gap.top+5,pallet_y));
+    // island_area += Find_Island_Area(max(gap.right+5,pallet_x),gap.top);
+    // island_area += Find_Island_Area(gap.right,max(gap.top+5,pallet_y)); 
+    
+    
     // cout <<"created island area\t"<<island_area<<endl;
     // cout <<"box area       \t"<<gap.area <<endl;
     // cout<<box.dim1 * box.dim2 <<endl;
@@ -716,6 +759,26 @@ int CPlanning_Box::Find_Island_Area(int x,int y)
     
 
 }
+float CPlanning_Box::Evaluate_Area_Corner(boxinfo box, gap_range gap)
+{
+    int l = gap.left;
+    int r = gap.right;
+    int t = gap.top;
+    int d = gap.down;
+    float score_corner = 0;
+
+    if (l <= 1) score_corner += 1;
+    if (d <= 1) score_corner += 1;
+    if (r >= pallet_x) score_corner += 1;
+    if (t >= pallet_y) score_corner += 1;
+
+    score_corner /= 2;
+    //cout << "corner score \t"<<score_corner<<endl;
+    return score_corner;
+}
+
+
+
 
 
 
@@ -809,7 +872,8 @@ void CPlanning_Box::Calcul_Box_Coordinate(boxinfo &box,gap_info best_gap)
     }
     box.coz = gap.z_dim;
     cout<<"gap chosen is:\t"<<endl;
-    cout<<gap.left<<" "<<gap.right<<" "<<gap.down<<" "<<gap.top<<endl;
+    cout<<gap.left<<" "<<gap.left + box.packx -1<<" "<<gap.down<<" "<<gap.down + box.packy -1<<endl;
+    cout<<"box size:\t"<<box.packx<<"\t"<<box.packy<<"\t"<<box.packz<<endl;
     cout <<"box xyz position:\t"<<box.cox<<"\t"<<box.coy<<"\t"<<box.coz<<endl;
 }
 int CPlanning_Box::Update_Height_Map(boxinfo &box)

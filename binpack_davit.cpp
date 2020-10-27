@@ -419,7 +419,7 @@ int main()
 			box_num++;
 			packed_num++;
 			cout <<"box number:\t"<<box_num<<"\tplaced, current packed box number is:\t"<<packed_num<<endl;
-			// if(packed_num >=4)
+			// if(packed_num >=15)
 			// {
 			// 	break;
 			// }
