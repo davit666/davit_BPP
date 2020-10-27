@@ -291,13 +291,14 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
 
         //从堆结构中拿出最小的可放置高度z，寻找z中的可用空隙
         int z = *gaps_height.begin();
+        int highest_z = *gaps_height.end();
         temp_gaps_height.insert(temp_gaps_height.end(),z);
         gaps_height.erase(z);
         
         //遍历 gaps-set【z】中所有空隙
         for (int i = 0; i < gaps_set[z].size();i++)
         {
-            if (gaps_set[z][i].z_dim + box.dim3<= pallet_z + z_allowed_over_pallet)//不超高
+            if (gaps_set[z][i].z_dim + box.dim3<= pallet_z + z_allowed_over_pallet && gaps_set[z][i].z_dim + box.dim3 >= highest_z -find_low_gap)//不超高
             {
 
                 if (((gaps_set[z][i].right-gaps_set[z][i].left + 1)>= box.dim1)&&((gaps_set[z][i].top-gaps_set[z][i].down + 1)>= box.dim2))//箱子可以放进空隙
@@ -601,7 +602,8 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
     if (support_area_ratio < stability_threshold_area || support_center_ratio < stability_threshold_center)//若支撑面积利用率过小或重心偏移程度过大，视为不可支撑
     {
         // cout<<"!!!!!annot support"<<endl;
-        return -10000;
+        support_score-= 10000;
+        // return support_score;
     }
     support_score = support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;//返回面积利用率分数与重心偏移率分数
 
