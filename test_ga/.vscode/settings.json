@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "GAAllele.C": "cpp",
+        "GA1DBinStrGenome.C": "cpp",
+        "GA3DArrayGenome.C": "cpp",
+        "GA2DBinStrGenome.C": "cpp",
+        "GA2DArrayGenome.C": "cpp",
+        "GA3DBinStrGenome.C": "cpp",
+        "GABin2DecGenome.C": "cpp",
+        "GADCrowdingGA.C": "cpp",
+        "GAGenome.C": "cpp",
+        "GAList.C": "cpp",
+        "GABinStr.C": "cpp",
+        "GA1DArrayGenome.C": "cpp"
+    }
+}
