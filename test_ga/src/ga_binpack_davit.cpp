@@ -1,7 +1,10 @@
 
 #include "ga_CPlanning_box_davit.h"
 #include "ga_CPlanning_box_davit.cpp"
-// #include "ga_binpack_davit.h"
+
+
+#include <ga/GASimpleGA.h>
+#include <ga/GA1DArrayGenome.h>
 // #include <iostream>
 // using namespace std;
 
@@ -329,8 +332,9 @@ vector<vector<int>> Get_Rand_Matrix(int loop_num){
 	{
 		for(int j = 0; j < 100;j++)
 		{
-			rand_mat[i][j] = rand_arr[i * 100 + j ];
-			// cout << rand_mat[i][j];
+			// rand_mat[i][j] = rand_arr[i * 100 + j ];
+			rand_mat[i][j] = rand() %46;
+			cout << rand_mat[i][j];
 		}
 	}
 
@@ -345,22 +349,19 @@ vector<vector<int>> Get_Rand_Matrix(int loop_num){
 
 
 
-float Get_Ave_Volume_Ratio()
+float Get_Ave_Volume_Ratio(vector<float> weights)
 {
-	//托盘尺寸
+
 	int xx = 113;
 	int yy = 95;
 	int zz = 100;
-	//吸盘尺寸
 	int s_x = 14;
 	int s_y = 14;
-	//吸盘放置高度
 	int release_z = 2;
-	//设置寻找最低层的范围
 	int low_gap = 45;
 	//初始化
-	CPlanning_Box PlanningBox(xx, yy, zz, s_x, s_y, release_z, low_gap,true);
-	int loop_num = 10; //总共测试码垛轮数 
+	CPlanning_Box PlanningBox(xx, yy, zz, s_x, s_y, release_z, low_gap,true,weights);
+	int loop_num = 1; //总共测试码垛轮数 
 	vector<boxinfo> Box_size =  Get_Box_Sets();
 	vector<vector<int>> rand_mat = Get_Rand_Matrix(loop_num);
 
@@ -400,6 +401,7 @@ float Get_Ave_Volume_Ratio()
 		{
 			box_num++;
 			packed_num++;
+			// cout<<"box\t"<<box_num<<endl;
 		}
 		
 		//不能放
@@ -412,8 +414,8 @@ float Get_Ave_Volume_Ratio()
 
 			all_volume_ratio += PlanningBox.volume_ratio;
 			ave_volume_ratio = all_volume_ratio / (float)loop;
-			// cout << "当前托盘空间利用率 Volume Ratio: " << PlanningBox.volume_ratio << endl;
-			// cout << "目前为止平均空间利用率:" << ave_volume_ratio << endl;
+			cout << "当前托盘空间利用率 Volume Ratio: " << PlanningBox.volume_ratio << endl;
+			cout << "目前为止平均空间利用率:" << ave_volume_ratio << endl;
 
 		}
 
@@ -423,11 +425,56 @@ float Get_Ave_Volume_Ratio()
 	return ave_volume_ratio;
 }
 
-int main()
+
+
+float Objective(GAGenome &g)
 {
-	float num = Get_Ave_Volume_Ratio();
-	cout<<"!!!!!!!!!!!!!!!"<<num<<endl;
+	GA1DArrayGenome<int>& genome = (GA1DArrayGenome<int>&)g;
+	
+	vector<float> weights(9);
+	// vector<float> weights = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+	
+	for(int i=0; i<genome.length(); i++)
+	{
+		weights[i] = (float) genome.gene(i) /10;
+		cout <<weights[i]<<"\t";
+	}
+	
+	float value = Get_Ave_Volume_Ratio(weights);
+	cout<<"!!!!!!!!!!!!!!!"<<value<<endl;
+	return value;
+}
 
 
-	return 0;
+// 初期化関数
+void Initializer(GAGenome& g)
+{
+  GA1DArrayGenome<int>& genome = (GA1DArrayGenome<int>&)g;
+	for(int i = 0;i < genome.length();i++){
+  	genome.gene(i, GARandomInt(0,10));
+	}
+}
+
+int main(int argc, char const* argv[])
+{
+
+  // ゲノムのインスタンスを生成
+  GA1DArrayGenome<int> genome(9,Objective);
+  genome.crossover(GA1DArrayGenome<int>::UniformCrossover);
+  genome.initializer(::Initializer);
+
+  GASimpleGA ga(genome);
+  ga.populationSize(4);
+  ga.nGenerations(3);
+  ga.pMutation(0.3);
+  ga.pCrossover(0.9);
+
+  // 評価開始
+  ga.evolve();
+
+  // 最も評価の高い個体を表示 
+  std::cout << ga.statistics().bestIndividual() << "\n";
+	// float num = Objective(genome);
+
+  return 0;
 }

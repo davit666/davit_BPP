@@ -8,7 +8,7 @@ include_directories(${INC_DIR})
 link_directories(${LINK_DIR})
 link_libraries(ga)
 
-add_executable(main ./src/GA_TEST.cpp)
+add_executable(main ./src/ga_binpack_davit.cpp)
 target_link_libraries(main ga)
 
 

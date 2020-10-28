@@ -123,32 +123,32 @@ main/fast:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 .PHONY : main/fast
 
-src/GA_TEST.o: src/GA_TEST.cpp.o
+src/ga_binpack_davit.o: src/ga_binpack_davit.cpp.o
 
-.PHONY : src/GA_TEST.o
+.PHONY : src/ga_binpack_davit.o
 
 # target to build an object file
-src/GA_TEST.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/GA_TEST.cpp.o
-.PHONY : src/GA_TEST.cpp.o
+src/ga_binpack_davit.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/ga_binpack_davit.cpp.o
+.PHONY : src/ga_binpack_davit.cpp.o
 
-src/GA_TEST.i: src/GA_TEST.cpp.i
+src/ga_binpack_davit.i: src/ga_binpack_davit.cpp.i
 
-.PHONY : src/GA_TEST.i
+.PHONY : src/ga_binpack_davit.i
 
 # target to preprocess a source file
-src/GA_TEST.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/GA_TEST.cpp.i
-.PHONY : src/GA_TEST.cpp.i
+src/ga_binpack_davit.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/ga_binpack_davit.cpp.i
+.PHONY : src/ga_binpack_davit.cpp.i
 
-src/GA_TEST.s: src/GA_TEST.cpp.s
+src/ga_binpack_davit.s: src/ga_binpack_davit.cpp.s
 
-.PHONY : src/GA_TEST.s
+.PHONY : src/ga_binpack_davit.s
 
 # target to generate assembly for a file
-src/GA_TEST.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/GA_TEST.cpp.s
-.PHONY : src/GA_TEST.cpp.s
+src/ga_binpack_davit.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/ga_binpack_davit.cpp.s
+.PHONY : src/ga_binpack_davit.cpp.s
 
 # Help Target
 help:
@@ -159,9 +159,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... main"
 	@echo "... edit_cache"
-	@echo "... src/GA_TEST.o"
-	@echo "... src/GA_TEST.i"
-	@echo "... src/GA_TEST.s"
+	@echo "... src/ga_binpack_davit.o"
+	@echo "... src/ga_binpack_davit.i"
+	@echo "... src/ga_binpack_davit.s"
 .PHONY : help
 
 

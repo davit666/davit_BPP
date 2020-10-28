@@ -7,8 +7,25 @@ bool operator==(const POINT &pt1, const POINT &pt2) {
 	return (pt1.x == pt2.x && pt1.y == pt2.y);
 }
 
-CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,int low_gap,bool have_wall)
+CPlanning_Box::CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,int low_gap,bool have_wall,vector<float> weights)
 {
+    
+    // for (int i = 0; i < weights.size();i++)
+    // {
+    //     cout <<weights[i]<<"h\t";
+    // }
+    weight_height = weights[0];
+    weight_range = weights[1];
+    weight_support = weights[2];
+    weight_area_supported_area = weights[3];
+    weight_area_supported_center = weights[4];
+    weight_area_supported_volume = weights[5];
+    weight_area_contacted = weights[6];
+    weight_area_created = weights[7];
+    weight_area_corner = weights[8];
+    
+    
+    
     //pallet information
    	pallet_x = px;
 	pallet_y = py;

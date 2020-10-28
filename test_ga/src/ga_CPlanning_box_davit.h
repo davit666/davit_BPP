@@ -38,15 +38,7 @@ const int z_allowed_over_pallet = 0; //允许箱子超过龙车的高度
 
 
 //用于遗传算法的权重参数
-const float weight_height = 0.6;
-const float weight_range = 0.9;
-const float weight_support = 0;
-const float weight_area_supported_area = 0.1;
-const float weight_area_supported_center = 0.1;
-const float weight_area_supported_volume = 0.1;
-const float weight_area_contacted = 0.9;
-const float weight_area_created = 0.6;
-const float weight_area_corner = 0.05;
+
 
 
 
@@ -92,7 +84,7 @@ struct gap_info
 class CPlanning_Box
 {
     public:
-    CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,int low_gap,bool have_wall);//初始化
+    CPlanning_Box(int px, int py, int pz, int s_x, int s_y, int r_z,int low_gap,bool have_wall,vector<float> weights);//初始化
 	// ~CPlanning_Box();
     bool Place_Box_to_Gap(boxinfo &box);//将给定箱子放入当前托盘，输出能否放置
     // void Update_Height_map();
@@ -167,7 +159,15 @@ class CPlanning_Box
 
 
 
-     
+   float weight_height = 0.6;
+   float weight_range = 0.9;
+   float weight_support = 0;
+   float weight_area_supported_area = 0.1;
+   float weight_area_supported_center = 0.1;
+   float weight_area_supported_volume = 0.1;
+   float weight_area_contacted = 0.9;
+   float weight_area_created = 0.6;
+   float weight_area_corner = 0.05;
 
 };
 

@@ -1,1 +1,1 @@
-/usr/bin/c++    -rdynamic CMakeFiles/main.dir/src/GA_TEST.cpp.o  -o main  -L/home/davit/Documents/files/GAlib_files/galib_2.4.7.orig/galib247 -Wl,-rpath,/home/davit/Documents/files/GAlib_files/galib_2.4.7.orig/galib247 -lga -lga 
+/usr/bin/c++    -rdynamic CMakeFiles/main.dir/src/ga_binpack_davit.cpp.o  -o main  -L/home/davit/Documents/files/GAlib_files/galib_2.4.7.orig/galib247 -Wl,-rpath,/home/davit/Documents/files/GAlib_files/galib_2.4.7.orig/galib247 -lga -lga 

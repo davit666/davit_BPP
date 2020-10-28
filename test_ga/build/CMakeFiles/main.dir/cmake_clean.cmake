@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/main.dir/src/GA_TEST.cpp.o"
+  "CMakeFiles/main.dir/src/ga_binpack_davit.cpp.o"
   "main.pdb"
   "main"
 )
