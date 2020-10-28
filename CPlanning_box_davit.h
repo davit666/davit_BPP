@@ -47,7 +47,15 @@ const float weight_area_supported_volume = 0.1;
 const float weight_area_contacted = 0.9;
 const float weight_area_created = 0.6;
 const float weight_area_corner = 0.05;
-
+// const float weight_height = 1;
+// const float weight_range = 0.6;
+// const float weight_support = 0.5;
+// const float weight_area_supported_area = 0.7;
+// const float weight_area_supported_center = 0.7;
+// const float weight_area_supported_volume = 0.5;
+// const float weight_area_contacted = 0;
+// const float weight_area_created = 0.6;
+// const float weight_area_corner = 0.4;
 
 
 

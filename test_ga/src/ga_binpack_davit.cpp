@@ -309,7 +309,7 @@ vector<vector<int>> Get_Rand_Matrix(int loop_num){
 	vector<int> rand_arr;
 	rand_arr.resize(loop_num * 100);
 
-	std::ifstream infile("rand_numbers.txt");
+	std::ifstream infile("../src/rand_numbers.txt");
 	int rand_count = 0;
 	int r;
 	while(infile >> r)
@@ -332,9 +332,9 @@ vector<vector<int>> Get_Rand_Matrix(int loop_num){
 	{
 		for(int j = 0; j < 100;j++)
 		{
-			// rand_mat[i][j] = rand_arr[i * 100 + j ];
-			rand_mat[i][j] = rand() %46;
-			cout << rand_mat[i][j];
+			rand_mat[i][j] = rand_arr[i * 100 + j ];
+			// rand_mat[i][j] = rand() %46;
+			// cout << rand_mat[i][j];
 		}
 	}
 
@@ -345,7 +345,9 @@ vector<vector<int>> Get_Rand_Matrix(int loop_num){
 
 
 
-
+int loop_num = 10; //总共测试码垛轮数 
+vector<boxinfo> Box_size =  Get_Box_Sets();
+vector<vector<int>> rand_mat = Get_Rand_Matrix(loop_num);
 
 
 
@@ -361,9 +363,7 @@ float Get_Ave_Volume_Ratio(vector<float> weights)
 	int low_gap = 45;
 	//初始化
 	CPlanning_Box PlanningBox(xx, yy, zz, s_x, s_y, release_z, low_gap,true,weights);
-	int loop_num = 1; //总共测试码垛轮数 
-	vector<boxinfo> Box_size =  Get_Box_Sets();
-	vector<vector<int>> rand_mat = Get_Rand_Matrix(loop_num);
+	
 
 	
 	
@@ -414,14 +414,14 @@ float Get_Ave_Volume_Ratio(vector<float> weights)
 
 			all_volume_ratio += PlanningBox.volume_ratio;
 			ave_volume_ratio = all_volume_ratio / (float)loop;
-			cout << "当前托盘空间利用率 Volume Ratio: " << PlanningBox.volume_ratio << endl;
-			cout << "目前为止平均空间利用率:" << ave_volume_ratio << endl;
+			// cout << "当前托盘空间利用率 Volume Ratio: " << PlanningBox.volume_ratio << endl;
+			// cout << "目前为止平均空间利用率:" << ave_volume_ratio << endl;
 
 		}
 
 	}
 
-    cout<<"simulation ended"<<endl;
+    cout<<endl<<"simulation ended\t";
 	return ave_volume_ratio;
 }
 
@@ -455,6 +455,8 @@ void Initializer(GAGenome& g)
 	}
 }
 
+
+
 int main(int argc, char const* argv[])
 {
 
@@ -464,9 +466,9 @@ int main(int argc, char const* argv[])
   genome.initializer(::Initializer);
 
   GASimpleGA ga(genome);
-  ga.populationSize(4);
-  ga.nGenerations(3);
-  ga.pMutation(0.3);
+  ga.populationSize(20);
+  ga.nGenerations(100);
+  ga.pMutation(0.1);
   ga.pCrossover(0.9);
 
   // 評価開始

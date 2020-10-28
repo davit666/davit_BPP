@@ -338,7 +338,7 @@ gap_info CPlanning_Box::Find_Best_Gap(boxinfo box, vector<gap_info> gap_solution
 {
     boxinfo temp_box = box;
     gap_info best_gap; //用于记录最好空隙
-    float best_score = -10000;//用于记录最好空隙分数
+    float best_score = -100000;//用于记录最好空隙分数
 
     for(int i = 0;i < gap_solutions.size();i++)//遍历所有选中空隙
     {
@@ -498,7 +498,7 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
         
         
         score += Evaluate_Area_Supported(box,temp_gap);//计算角落的支撑分数
-        if (score <0) return -10000;//分数负数表示无法支撑
+        // if (score <0) return -10000;//分数负数表示无法支撑
         score += Evaluate_Area_Contacted(box,temp_gap) * weight_area_contacted;//计算角落的接触分数
         score += Evaluate_Area_Created(box,temp_gap) * weight_area_created; //计算角落的贡献分数
         score += Evaluate_Area_Corner(box,temp_gap) *weight_area_corner;
@@ -605,7 +605,7 @@ float CPlanning_Box::Evaluate_Area_Supported(boxinfo box,gap_range gap)
         support_score-= 10000;
         // return support_score;
     }
-    support_score = support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;//返回面积利用率分数与重心偏移率分数
+    support_score += support_area_ratio * weight_area_supported_area + support_center_ratio * weight_area_supported_center;//返回面积利用率分数与重心偏移率分数
 
     support_score +=  (support_volume_ratio * weight_area_supported_volume);
 
