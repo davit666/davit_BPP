@@ -617,12 +617,13 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
     //计算箱子放在该角落时，箱子与四周其他物体的接触面积，只要箱子与旁边的箱子或墙壁距离在容许空隙最大值的范围内，视为接触
 
     int i,j,tmp_dh,tmp_area,contacted_area;
+    int check_range = 2;
     contacted_area = 0;
     tmp_area = 0;
     for (j = gap.down; j <= gap.top; j++)//计算箱子左侧接触面积，取最右
     {
         tmp_dh = 0;
-        for (i = max(gap.left - Max_Allowed_Gap_Size , 0); i < gap.left; i++)
+        for (i = max(gap.left - check_range , 0); i < gap.left; i++)
         {
             if (Height_Map[i][j].Height > gap.z_dim)
             {
@@ -639,7 +640,7 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
     {
         tmp_dh = 0;
         
-        for (i = gap.right + 1; i <= min(gap.right + Max_Allowed_Gap_Size,pallet_x); i++)
+        for (i = gap.right + 1; i <= min(gap.right + check_range,pallet_x); i++)
         {
             if (Height_Map[i][j].Height > gap.z_dim)
             {
@@ -656,7 +657,7 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
     for (i = gap.left; i <= gap.right; i++)//计算箱子右侧接触面积，取最左
     {
         tmp_dh = 0;
-        for (j = gap.top + 1; j <= min(gap.top + Max_Allowed_Gap_Size,pallet_y); j++)
+        for (j = gap.top + 1; j <= min(gap.top + check_range,pallet_y); j++)
         {
             if (Height_Map[i][j].Height > gap.z_dim)
             {
@@ -673,7 +674,7 @@ float CPlanning_Box::Evaluate_Area_Contacted(boxinfo box,gap_range gap)
     for (i = gap.left; i <= gap.right; i++)//计算箱子上侧接触面积，取最下
     {
         tmp_dh = 0;
-        for (j = max(gap.down - Max_Allowed_Gap_Size, 0); j < gap.down; j++)
+        for (j = max(gap.down - check_range, 0); j < gap.down; j++)
         {
             if (Height_Map[i][j].Height > gap.z_dim)
             {
@@ -719,14 +720,14 @@ float CPlanning_Box::Evaluate_Area_Created(boxinfo box,gap_range gap)
     
     int island_area = Find_Island_Area(gap.left,gap.down);//寻找01矩阵中包含原箱子的最大面积
     
-    // island_area += Find_Island_Area(min(gap.left-5,0),gap.down);
-    // island_area += Find_Island_Area(gap.left,min(gap.down-5,0));
-    // island_area += Find_Island_Area(max(gap.right+5,pallet_x),gap.down);
-    // island_area += Find_Island_Area(gap.right,min(gap.down-5,0));
-    // island_area += Find_Island_Area(min(gap.left-5,0),gap.top);
-    // island_area += Find_Island_Area(gap.left,max(gap.top+5,pallet_y));
-    // island_area += Find_Island_Area(max(gap.right+5,pallet_x),gap.top);
-    // island_area += Find_Island_Area(gap.right,max(gap.top+5,pallet_y)); 
+    island_area += Find_Island_Area(min(gap.left-5,0),gap.down);
+    island_area += Find_Island_Area(gap.left,min(gap.down-5,0));
+    island_area += Find_Island_Area(max(gap.right+5,pallet_x),gap.down);
+    island_area += Find_Island_Area(gap.right,min(gap.down-5,0));
+    island_area += Find_Island_Area(min(gap.left-5,0),gap.top);
+    island_area += Find_Island_Area(gap.left,max(gap.top+5,pallet_y));
+    island_area += Find_Island_Area(max(gap.right+5,pallet_x),gap.top);
+    island_area += Find_Island_Area(gap.right,max(gap.top+5,pallet_y)); 
     
     
     // cout <<"created island area\t"<<island_area<<endl;

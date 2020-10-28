@@ -31,8 +31,8 @@ const int Min_Box_Size = 22; //最小箱子最小边长
 const int Max_Allowed_Gap_Size = 5;  //可接受的不可用缝隙最大边长
 const int available_gaps_num_limit = 20; //每次判断放置位置时最多比较的箱子数量
 
-const float stability_threshold_area = 0.3; //箱子在支撑面积上的容许程度
-const float stability_threshold_center = 0.7;//箱子在中心偏移上的容许程度
+const float stability_threshold_area = 0.5; //箱子在支撑面积上的容许程度
+const float stability_threshold_center = 0.8;//箱子在中心偏移上的容许程度
 const int allow_z_err = 2; //箱子判断支撑底面时的高度容差
 const int z_allowed_over_pallet = 0; //允许箱子超过龙车的高度
 
