@@ -443,7 +443,7 @@ float CPlanning_Box::Find_Best_Pos_in_Gap(boxinfo box,gap_range gap,gap_info &ga
     
     //初始化最好位置与最好位置分数
     int best_position = LEFT_DOWN;
-    float best_score = 0;
+    float best_score = -10000;
     
     for (int i = 0;i < positions.size();i++) //遍历四个位置
     {
