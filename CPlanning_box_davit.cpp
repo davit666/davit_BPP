@@ -285,6 +285,7 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
     
     vector<gap_info> gap_solutions;//用于存储空隙高级信息的向量
     temp_gaps_height.clear();//用于临时存储堆结构中的高度
+    int z_lowest = *gaps_height.begin();
     
     while (gap_solutions.size()< available_gaps_num_limit)//当目前找到的解数量小于x
     {
@@ -298,7 +299,7 @@ vector<gap_info> CPlanning_Box::Find_Gaps_Available(boxinfo box)
         //遍历 gaps-set【z】中所有空隙
         for (int i = 0; i < gaps_set[z].size();i++)
         {
-            if (gaps_set[z][i].z_dim + box.dim3<= pallet_z + z_allowed_over_pallet && gaps_set[z][i].z_dim + box.dim3 >= highest_z -find_low_gap)//不超高
+            if (gaps_set[z][i].z_dim + box.dim3<= pallet_z + z_allowed_over_pallet && gaps_set[z][i].z_dim - z_lowest <= find_low_gap)//不超高
             {
 
                 if (((gaps_set[z][i].right-gaps_set[z][i].left + 1)>= box.dim1)&&((gaps_set[z][i].top-gaps_set[z][i].down + 1)>= box.dim2))//箱子可以放进空隙
@@ -770,12 +771,12 @@ float CPlanning_Box::Evaluate_Area_Corner(boxinfo box, gap_range gap)
     int d = gap.down;
     float score_corner = 0;
 
-    if (l <= 1) score_corner += 1;
-    if (d <= 1) score_corner += 1;
+    if (l <= 1) score_corner += 0.9;
+    if (d <= 1) score_corner += 0.9;
     if (r >= pallet_x) score_corner += 1;
     if (t >= pallet_y) score_corner += 1;
 
-    score_corner /= 2;
+    score_corner /= 4;
     //cout << "corner score \t"<<score_corner<<endl;
     return score_corner;
 }
@@ -873,6 +874,18 @@ void CPlanning_Box::Calcul_Box_Coordinate(boxinfo &box,gap_info best_gap)
             break;
         }
     }
+
+    if ((gap.right - gap.left) + 1 - box.packx < Min_Box_Size)
+    {
+        box.cox = gap.left + (int) (gap.right - gap.left + 1 - box.packx)/2;
+    }
+    if ((gap.top - gap.down) + 1 - box.packy < Min_Box_Size)
+    {
+        box.coy = gap.down + (int) (gap.top - gap.down + 1 - box.packy)/2;
+    }
+
+
+
     box.coz = gap.z_dim;
     cout<<"gap chosen is:\t"<<endl;
     cout<<gap.left<<" "<<gap.left + box.packx -1<<" "<<gap.down<<" "<<gap.down + box.packy -1<<endl;

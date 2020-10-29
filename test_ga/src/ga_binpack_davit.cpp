@@ -346,6 +346,7 @@ vector<vector<int>> Get_Rand_Matrix(int loop_num){
 
 
 int loop_num = 10; //总共测试码垛轮数 
+int acc = 100;
 vector<boxinfo> Box_size =  Get_Box_Sets();
 vector<vector<int>> rand_mat = Get_Rand_Matrix(loop_num);
 
@@ -432,11 +433,11 @@ float Objective(GAGenome &g)
 	GA1DArrayGenome<int>& genome = (GA1DArrayGenome<int>&)g;
 	
 	vector<float> weights(9);
-	// vector<float> weights = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
+	// vector<float> weights = {0.7,0.1,0.9,0.1,0.7,0.7,0.7,0.7,0.7};
 	
 	for(int i=0; i<genome.length(); i++)
 	{
-		weights[i] = (float) genome.gene(i) /10;
+		weights[i] = (float) genome.gene(i) / (float) acc;
 		cout <<weights[i]<<"\t";
 	}
 	
@@ -451,7 +452,7 @@ void Initializer(GAGenome& g)
 {
   GA1DArrayGenome<int>& genome = (GA1DArrayGenome<int>&)g;
 	for(int i = 0;i < genome.length();i++){
-  	genome.gene(i, GARandomInt(0,10));
+  	genome.gene(i, GARandomInt(0,acc));
 	}
 }
 
@@ -466,10 +467,10 @@ int main(int argc, char const* argv[])
   genome.initializer(::Initializer);
 
   GASimpleGA ga(genome);
-  ga.populationSize(20);
-  ga.nGenerations(100);
+  ga.populationSize(50);
+  ga.nGenerations(500);
   ga.pMutation(0.1);
-  ga.pCrossover(0.9);
+  ga.pCrossover(0.7);
 
   // 評価開始
   ga.evolve();

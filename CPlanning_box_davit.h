@@ -31,14 +31,14 @@ const int Min_Box_Size = 22; //最小箱子最小边长
 const int Max_Allowed_Gap_Size = 5;  //可接受的不可用缝隙最大边长
 const int available_gaps_num_limit = 20; //每次判断放置位置时最多比较的箱子数量
 
-const float stability_threshold_area = 0.5; //箱子在支撑面积上的容许程度
-const float stability_threshold_center = 0.8;//箱子在中心偏移上的容许程度
+const float stability_threshold_area = 0.4; //箱子在支撑面积上的容许程度
+const float stability_threshold_center = 0.6;//箱子在中心偏移上的容许程度
 const int allow_z_err = 2; //箱子判断支撑底面时的高度容差
 const int z_allowed_over_pallet = 0; //允许箱子超过龙车的高度
 
 
 //用于遗传算法的权重参数
-// const float weight_height = 0.6;
+// const float weight_height = 0.6 * 5;
 // const float weight_range = 0.9;
 // const float weight_support = 0;
 // const float weight_area_supported_area = 0.1;
@@ -47,15 +47,15 @@ const int z_allowed_over_pallet = 0; //允许箱子超过龙车的高度
 // const float weight_area_contacted = 0.9;
 // const float weight_area_created = 0.6;
 // const float weight_area_corner = 0.05;
-const float weight_height = 0.7;
-const float weight_range = 0.1;
-const float weight_support = 0.9;
-const float weight_area_supported_area = 0.1;
-const float weight_area_supported_center = 0.7;
-const float weight_area_supported_volume = 0.7;
-const float weight_area_contacted = 0.7;
-const float weight_area_created = 0.7;
-const float weight_area_corner = 0.7;
+const float weight_height = 1 * 5;
+const float weight_range = 0.8;
+const float weight_support = 0.96;
+const float weight_area_supported_area = 0.06;
+const float weight_area_supported_center = 0.44;
+const float weight_area_supported_volume = 0.11;
+const float weight_area_contacted = 0.87;
+const float weight_area_created = 0.03;
+const float weight_area_corner = 0.56;
 
 
 
